@@ -1,24 +1,18 @@
 import flet as ft
 
-
-def main(page: ft.Page):
-    page.title = "Modern Side Menu"
-    page.theme_mode = ft.ThemeMode.LIGHT
-    page.padding = 0
-    page.bgcolor = ft.Colors.GREY_100
-
+def create_sidemenu(page: ft.Page):
     # Estado del menú
     menu_abierto = True
     ancho_menu = 240
-    ancho_cerrado = 0  # Ahora sí desaparece completamente
+    ancho_cerrado = 0
 
-    # Elementos del menú
+    # Elementos del menú con sus rutas correspondientes
     items_menu = [
-        {"icon": ft.Icons.HOME, "text": "Inicio"},
-        {"icon": ft.Icons.SHOPPING_BAG, "text": "Productos"},
-        {"icon": ft.Icons.ASSIGNMENT, "text": "Registros"},
-        {"icon": ft.Icons.PIE_CHART, "text": "Analíticas"},
-        {"icon": ft.Icons.SETTINGS, "text": "Configuración"},
+        {"icon": ft.icons.HOME, "text": "Inicio", "ruta": "/home"},
+        {"icon": ft.icons.SHOPPING_BAG, "text": "Productos", "ruta": "/productos"},
+        {"icon": ft.icons.ASSIGNMENT, "text": "Registros", "ruta": "/registros"},
+        {"icon": ft.icons.PIE_CHART, "text": "Camaras", "ruta": "/camaras"},
+        {"icon": ft.icons.SETTINGS, "text": "Configuración", "ruta": "/configuracion"},
     ]
 
     def toggle_menu(e):
@@ -53,18 +47,18 @@ def main(page: ft.Page):
                             ),
                             radius=32,
                         ),
-                        texto_perfil := ft.Text("John Doe", color=ft.Colors.WHITE, size=14),
+                        texto_perfil := ft.Text("John Doe", color=ft.colors.WHITE, size=14),
                     ],
                     horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                     spacing=10,
                 ),
                 alignment=ft.alignment.center,
             ),
-            ft.Divider(height=1, color=ft.Colors.WHITE24),
+            ft.Divider(height=1, color=ft.colors.WHITE24),
         ]
     )
 
-    # Añadir items del menú
+    # Añadir items del menú con navegación
     for item in items_menu:
         columna_menu.controls.append(
             ft.Container(
@@ -74,16 +68,16 @@ def main(page: ft.Page):
                         ft.IconButton(
                             icon=item["icon"],
                             icon_size=24,
-                            style=ft.ButtonStyle(color=ft.Colors.WHITE),
+                            style=ft.ButtonStyle(color=ft.colors.WHITE),
                         ),
                         ft.Text(item["text"],
-                                color=ft.Colors.WHITE,
+                                color=ft.colors.WHITE,
                                 size=14,
                                 visible=menu_abierto),
                     ],
                     spacing=12,
                 ),
-                on_click=lambda e: print("Navegando a:", e.control.content.controls[1].value),
+                on_click=lambda e, ruta=item["ruta"]: page.go(ruta),
                 border_radius=12,
                 padding=ft.padding.only(left=14),
             )
@@ -92,30 +86,19 @@ def main(page: ft.Page):
     sidebar = ft.Container(
         width=ancho_menu,
         content=columna_menu,
-        bgcolor=ft.Colors.BLUE_900,
+        bgcolor=ft.colors.BLUE_900,
         animate=ft.animation.Animation(300, "easeOut"),
         clip_behavior=ft.ClipBehavior.HARD_EDGE,
     )
 
     # Botón de menú flotante (siempre visible)
     menu_button = ft.IconButton(
-        icon=ft.Icons.MENU,
+        icon=ft.icons.MENU,
         icon_size=24,
         on_click=toggle_menu,
-        style=ft.ButtonStyle(color=ft.Colors.WHITE),
+        style=ft.ButtonStyle(color=ft.colors.WHITE),
         top=10,
         left=10,
     )
 
-    page.add(
-        ft.Stack(
-            [
-                ft.Row([sidebar, ft.Container(expand=True, bgcolor=ft.Colors.WHITE)], expand=True, spacing=0),
-                menu_button  # Botón superpuesto fuera del sidebar
-            ],
-            expand=True,
-        )
-    )
-
-
-ft.app(target=main)
+    return sidebar, menu_button

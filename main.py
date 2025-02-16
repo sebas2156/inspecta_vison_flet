@@ -1,5 +1,6 @@
 import flet as ft
 from views.home import create_home_view  # Importamos la función del dashboard
+from views.camaras import create_camaras_view
 
 def create_login_view(page):
     # Estilos reutilizables
@@ -177,6 +178,8 @@ def main(page: ft.Page):
             page.views.append(create_login_view(page))
         elif page.route == "/home":
             page.views.append(create_home_view(page))
+        elif page.route == "/camaras":
+            page.views.append(create_camaras_view(page))
         page.update()
 
     page.on_route_change = route_change
