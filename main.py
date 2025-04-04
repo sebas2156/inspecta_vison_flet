@@ -1,7 +1,12 @@
 import flet as ft
-from views.home import create_home_view  # Importamos la función del dashboard
-from views.camaras import create_camaras_view
-
+from views.home import create_home_content  # Importamos la función del contenido
+from views.camaras import create_camaras_content
+from sidemenu import create_sidemenu  # Importamos el menú lateral
+from views.camara import create_camara_content
+from views.productos import create_productos_content
+from views.registros import create_registros_content
+from views.cuentas import create_cuentas_content
+from views.inventario import create_sectores_content
 def create_login_view(page):
     # Estilos reutilizables
     title_style = ft.TextStyle(
@@ -25,12 +30,6 @@ def create_login_view(page):
     }
 
     def login_clicked(e):
-        """
-        if not username.value or not password.value:
-            error_text.visible = True
-            error_text.value = "⚠️ Completa ambos campos"
-            error_text.color = ft.Colors.ORANGE_400
-        """
         if username.value == "" and password.value == "":
             error_text.visible = False
             page.snack_bar = ft.SnackBar(
@@ -39,7 +38,7 @@ def create_login_view(page):
                 behavior=ft.SnackBarBehavior.FLOATING
             )
             page.snack_bar.open = True
-            page.go("/home")  # Navegación al dashboard
+            page.go("/app")  # Navegación a la vista principal
         else:
             error_text.visible = True
             error_text.value = "⚠️ Usuario o contraseña incorrectos"
@@ -172,18 +171,57 @@ def main(page: ft.Page):
         "Poppins": "https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap"
     }
 
+    # Crear el layout principal UNA VEZ
+    sidebar, menu_button = create_sidemenu(page)
+    content_container = ft.Container(expand=True)  # Contenedor dinámico
+
+    # Layout principal (fuera de las vistas)
+    main_layout = ft.Stack(
+        [
+            ft.Row(
+                [
+                    sidebar,
+                    content_container
+                ],
+                expand=True
+            ),
+            menu_button
+        ],
+        expand=True
+    )
+
     def route_change(route):
         page.views.clear()
         if page.route == "/":
             page.views.append(create_login_view(page))
-        elif page.route == "/home":
-            page.views.append(create_home_view(page))
-        elif page.route == "/camaras":
-            page.views.append(create_camaras_view(page))
+        else:
+            # Solo actualizamos el contenido dinámico
+            if page.route == "/home":
+                content_container.content = create_home_content(page)
+            elif page.route == "/productos":
+                content_container.content = create_productos_content(page)
+            elif page.route == "/registros":
+                content_container.content = create_registros_content(page)
+            elif page.route == "/camaras":
+                content_container.content = create_camaras_content(page)
+            elif page.route == "/cuentas":
+                content_container.content = create_cuentas_content(page)
+            elif page.route == "/sectores":
+                content_container.content = create_sectores_content(page)
+            elif page.route.startswith("/camara"):
+                content_container.content = create_camara_content(page)
+            page.views.append(
+                ft.View(
+                    route="/app",
+                    controls=[main_layout],
+                    padding=0,
+                    bgcolor=ft.Colors.GREY_100
+                )
+            )
         page.update()
 
     page.on_route_change = route_change
-    page.on_view_pop = lambda _: page.go("/")  # Forzar regreso a login
+    page.on_view_pop = lambda _: page.go("/")
     page.go(page.route)
 
 ft.app(target=main)

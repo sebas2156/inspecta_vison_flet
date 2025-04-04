@@ -1,8 +1,10 @@
 import flet as ft
 
 def create_sidemenu(page: ft.Page):
-    # Estado del menú
-    menu_abierto = True
+    # Estado persistente en la página
+    if not hasattr(page, "menu_abierto"):
+        page.menu_abierto = True
+
     ancho_menu = 240
     ancho_cerrado = 0
 
@@ -10,26 +12,26 @@ def create_sidemenu(page: ft.Page):
     items_menu = [
         {"icon": ft.icons.HOME, "text": "Inicio", "ruta": "/home"},
         {"icon": ft.icons.SHOPPING_BAG, "text": "Productos", "ruta": "/productos"},
+        {"icon": ft.icons.SHOPPING_BAG, "text": "Sectores", "ruta": "/sectores"},
         {"icon": ft.icons.ASSIGNMENT, "text": "Registros", "ruta": "/registros"},
         {"icon": ft.icons.PIE_CHART, "text": "Camaras", "ruta": "/camaras"},
-        {"icon": ft.icons.SETTINGS, "text": "Configuración", "ruta": "/configuracion"},
+        {"icon": ft.icons.SETTINGS, "text": "Cuentas", "ruta": "/cuentas"},
     ]
 
     def toggle_menu(e):
-        nonlocal menu_abierto, ancho_menu
-        menu_abierto = not menu_abierto
-        sidebar.width = ancho_menu if menu_abierto else ancho_cerrado
-        texto_perfil.visible = menu_abierto
-        avatar.visible = menu_abierto
+        page.menu_abierto = not page.menu_abierto
+        update_menu_visibility()
+        page.update()
 
-        # Ocultar/mostrar texto en los ítems
-        for container in columna_menu.controls[2:2 + len(items_menu)]:
-            if hasattr(container, "content") and isinstance(container.content, ft.Row):
+    def update_menu_visibility():
+        sidebar.width = ancho_menu if page.menu_abierto else ancho_cerrado
+        texto_perfil.visible = page.menu_abierto
+        avatar.visible = page.menu_abierto
+        for container in columna_menu.controls[2:]:
+            if hasattr(container, "content"):
                 row = container.content
                 if len(row.controls) > 1:
-                    row.controls[1].visible = menu_abierto
-
-        page.update()
+                    row.controls[1].visible = page.menu_abierto
 
     # Barra lateral
     columna_menu = ft.Column(
@@ -73,7 +75,7 @@ def create_sidemenu(page: ft.Page):
                         ft.Text(item["text"],
                                 color=ft.colors.WHITE,
                                 size=14,
-                                visible=menu_abierto),
+                                visible=page.menu_abierto),
                     ],
                     spacing=12,
                 ),
@@ -84,7 +86,7 @@ def create_sidemenu(page: ft.Page):
         )
 
     sidebar = ft.Container(
-        width=ancho_menu,
+        width=ancho_menu if page.menu_abierto else ancho_cerrado,
         content=columna_menu,
         bgcolor=ft.colors.BLUE_900,
         animate=ft.animation.Animation(300, "easeOut"),
@@ -100,5 +102,8 @@ def create_sidemenu(page: ft.Page):
         top=10,
         left=10,
     )
+
+    # Llamar a la actualización inicial
+    update_menu_visibility()
 
     return sidebar, menu_button
